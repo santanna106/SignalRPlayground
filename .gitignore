@@ -1,0 +1,76 @@
+# =========================
+# .NET / ASP.NET Core
+# =========================
+bin/
+obj/
+artifacts/
+packages/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.db
+*.sqlite
+*.log
+TestResults/
+coverage/
+
+# Local appsettings and secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/secrets.json
+
+# =========================
+# Node / React / Vite
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env
+.env.*
+!.env.example
+coverage/
+build/
+dist/
+.next/
+out/
+.cache/
+.parcel-cache/
+
+# =========================
+# React Native / Expo
+# =========================
+.expo/
+.expo-shared/
+android/.gradle/
+android/app/build/
+android/build/
+android/.idea/
+android/local.properties
+ios/Pods/
+ios/build/
+ios/DerivedData/
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
+# Metro / bundler caches
+.metro/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
