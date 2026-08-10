@@ -16,7 +16,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactAppPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // Change to your React app URL
+        policy.WithOrigins("http://localhost:5173") // Change to your React app URL
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Required by SignalR
