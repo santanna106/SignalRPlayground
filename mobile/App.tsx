@@ -1,58 +1,57 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { openAppSettings, startBackgroundLocationUpdates } from './backgroundLocation';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  getHubUrl,
+  LocationMode,
+  openAppSettings,
+  startLocationStreaming,
+  stopLocationStreaming,
+} from './backgroundLocation';
 
 export default function App() {
-  const [message, setMessage] = useState('Solicitando permissoes de localizacao...');
+  const [message, setMessage] = useState('Escolha entre rota fake para testes ou GPS real.');
   const [canOpenSettings, setCanOpenSettings] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [activeMode, setActiveMode] = useState<LocationMode | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  async function handleStart(mode: LocationMode) {
+    const result = await startLocationStreaming(mode);
+    setMessage(result.message);
+    setCanOpenSettings(!result.ok && Boolean(result.canOpenSettings));
+    setActiveMode(result.ok ? mode : null);
+  }
 
-    async function start() {
-      try {
-        const result = await startBackgroundLocationUpdates();
-        if (cancelled) {
-          return;
-        }
-
-        setMessage(result.message);
-        setCanOpenSettings(!result.ok && Boolean(result.canOpenSettings));
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        const fallbackMessage = error instanceof Error ? error.message : 'Falha ao iniciar a localizacao em segundo plano.';
-        setMessage(fallbackMessage);
-        setCanOpenSettings(true);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    start();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  async function handleStop() {
+    await stopLocationStreaming();
+    setActiveMode(null);
+    setCanOpenSettings(false);
+    setMessage('Envio interrompido.');
+  }
 
   return (
     <View style={styles.container}>
-      {loading ? <ActivityIndicator size="large" color="#0f766e" /> : null}
-      <Text style={styles.title}>Rastreamento de localizacao</Text>
+      <Text style={styles.title}>SignalR Location Test</Text>
       <Text style={styles.message}>{message}</Text>
-      <Text style={styles.endpoint}>Envio para `http://localhost:5122/locationHub`</Text>
+      <Text style={styles.endpoint}>{getHubUrl()}</Text>
+      <View style={styles.buttonRow}>
+        <Pressable style={styles.primaryButton} onPress={() => void handleStart('fake')}>
+          <Text style={styles.buttonText}>Enviar rota fake</Text>
+        </Pressable>
+        <Pressable style={styles.secondaryButton} onPress={() => void handleStart('gps')}>
+          <Text style={styles.secondaryButtonText}>Usar GPS real</Text>
+        </Pressable>
+      </View>
+      <Pressable style={styles.stopButton} onPress={() => void handleStop()}>
+        <Text style={styles.buttonText}>Parar envio</Text>
+      </Pressable>
       {canOpenSettings ? (
-        <Pressable style={styles.button} onPress={openAppSettings}>
-          <Text style={styles.buttonText}>Abrir configuracoes</Text>
+        <Pressable style={styles.linkButton} onPress={() => void openAppSettings()}>
+          <Text style={styles.linkButtonText}>Abrir configuracoes</Text>
         </Pressable>
       ) : null}
+      <Text style={styles.modeLabel}>
+        Modo atual: {activeMode === null ? 'nenhum' : activeMode === 'fake' ? 'rota fake' : 'gps real'}
+      </Text>
       <StatusBar style="auto" />
     </View>
   );
@@ -84,15 +83,54 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textAlign: 'center',
   },
-  button: {
+  buttonRow: {
+    width: '100%',
+    gap: 12,
+  },
+  primaryButton: {
     backgroundColor: '#0f766e',
     borderRadius: 999,
     paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  secondaryButton: {
+    backgroundColor: '#e2e8f0',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  stopButton: {
+    backgroundColor: '#b91c1c',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    alignItems: 'center',
+    minWidth: 180,
+  },
+  linkButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '600',
+  },
+  secondaryButtonText: {
+    color: '#0f172a',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  linkButtonText: {
+    color: '#0f766e',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  modeLabel: {
+    fontSize: 14,
+    color: '#475569',
+    textAlign: 'center',
   },
 });
