@@ -34,6 +34,7 @@ app.UseCors("ReactAppPolicy");
 
 // Map the hub to a specific route
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<LocationHub>("/locationHub");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
